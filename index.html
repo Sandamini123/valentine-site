@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Be My Valentine? 💌</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-hearts" aria-hidden="true"></div>
+
+  <main class="card">
+    <div class="badge">💘 Valentine Invite</div>
+
+    <h1 id="title">Will you be my Valentine?</h1>
+    <p id="subtitle">I made a tiny website just for you ✨</p>
+
+    <div class="gif-box" aria-hidden="true">
+      <div class="emoji">🧸🌸</div>
+    </div>
+
+    <div class="btn-row" id="btnRow">
+      <button class="btn yes" id="yesBtn">Yes 💖</button>
+      <button class="btn no" id="noBtn">No 🙈</button>
+    </div>
+
+    <section class="result hidden" id="result">
+      <h2 id="resultTitle">YAY!! 🎉</h2>
+      <p id="resultText">You just made my day 💗</p>
+
+      <div class="actions">
+        <a class="btn link" id="emailLink" href="#" role="button">Send your answer 📩</a>
+        <button class="btn ghost" id="copyLinkBtn">Copy this page link 🔗</button>
+      </div>
+
+      <p class="tiny" id="copiedMsg"></p>
+    </section>
+
+    <footer class="footer">
+      <span>Made with 🍓 + 💗</span>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -2,43 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Be My Valentine? 💌</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="bg-hearts" aria-hidden="true"></div>
+  <div class="bg">
+    <div class="floating" aria-hidden="true"></div>
+  </div>
 
-  <main class="card">
-    <div class="badge">💘 Valentine Invite</div>
+  <main class="wrap">
+    <section class="card" role="region" aria-label="Valentine card">
+      <header class="top">
+        <div class="badge">💘 Valentine Mode</div>
+        <h1>Will you be my Valentine?</h1>
+        <p class="subtitle">
+          I promise snacks, good vibes, and unlimited appreciation ✨
+        </p>
+      </header>
 
-    <h1 id="title">Will you be my Valentine?</h1>
-    <p id="subtitle">I made a tiny website just for you ✨</p>
+      <div class="scene" id="scene" aria-label="Buttons area">
+        <button id="yesBtn" class="btn yes" type="button">
+          Yes 💖
+        </button>
 
-    <div class="gif-box" aria-hidden="true">
-      <div class="emoji">🧸🌸</div>
-    </div>
+        <button id="noBtn" class="btn no" type="button" aria-label="No (this one is shy)">
+          No 🙈
+        </button>
 
-    <div class="btn-row" id="btnRow">
-      <button class="btn yes" id="yesBtn">Yes 💖</button>
-      <button class="btn no" id="noBtn">No 🙈</button>
-    </div>
-
-    <section class="result hidden" id="result">
-      <h2 id="resultTitle">YAY!! 🎉</h2>
-      <p id="resultText">You just made my day 💗</p>
-
-      <div class="actions">
-        <a class="btn link" id="emailLink" href="#" role="button">Send your answer 📩</a>
-        <button class="btn ghost" id="copyLinkBtn">Copy this page link 🔗</button>
+        <div class="hint" id="hint" aria-live="polite">
+          (Try to click “No” 😌)
+        </div>
       </div>
 
-      <p class="tiny" id="copiedMsg"></p>
+      <footer class="footer">
+        <span class="tiny">Works on mobile & desktop • made with 💗</span>
+      </footer>
     </section>
 
-    <footer class="footer">
-      <span>Made with 🍓 + 💗</span>
-    </footer>
+    <section class="modal" id="modal" aria-hidden="true" role="dialog" aria-label="Success message">
+      <div class="modalCard" role="document">
+        <div class="spark" aria-hidden="true">✨</div>
+        <h2>YAYYY! 🎉</h2>
+        <p>
+          You just made my day 💕  
+          Click below to send your “Yes” reply via email.
+        </p>
+
+        <div class="actions">
+          <a id="emailLink" class="btn yes link" href="#">
+            Send Email 💌
+          </a>
+          <button id="closeModal" class="btn ghost" type="button">
+            Close
+          </button>
+        </div>
+
+        <p class="tinyNote">
+          Tip: You can edit the email text before sending.
+        </p>
+      </div>
+    </section>
   </main>
 
   <script src="script.js"></script>

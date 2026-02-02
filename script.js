@@ -1,8 +1,6 @@
 // ========== CHANGE THIS ==========
-const YOUR_EMAIL = "sandamini.bandara11@gmail.com"; // <-- put YOUR email here
-
-// Optional: change these too
-const YOUR_NAME = "Me"; // e.g., "Damini"
+const YOUR_EMAIL = "sandamini.bandara11@gmail.com";
+const YOUR_NAME = "Me";
 const PAGE_TITLE = "Valentine Surprise 💌";
 
 // ========== LOGIC ==========
@@ -14,24 +12,40 @@ const resultText = document.getElementById("resultText");
 const emailLink = document.getElementById("emailLink");
 const copyLinkBtn = document.getElementById("copyLinkBtn");
 const copiedMsg = document.getElementById("copiedMsg");
+const btnRow = document.getElementById("btnRow");
 
-let noClicks = 0;
+let noMoves = 0;
 
-// Move the "No" button to a random position inside the button row
+// Detect touch device (mobile/tablet)
+const isTouch = window.matchMedia("(pointer: coarse)").matches;
+
+// Keep the No button inside the btnRow bounds
 function dodgeNoButton() {
-  const row = document.getElementById("btnRow");
-  const rowRect = row.getBoundingClientRect();
+  const rowRect = btnRow.getBoundingClientRect();
   const btnRect = noBtn.getBoundingClientRect();
 
-  const maxX = Math.max(0, rowRect.width - btnRect.width);
-  const maxY = Math.max(0, rowRect.height - btnRect.height);
+  // Ensure absolute positioning only when dodging
+  noBtn.style.position = "absolute";
 
+  const padding = 8;
+
+  const maxX = Math.max(0, rowRect.width - btnRect.width - padding);
+  const maxY = Math.max(0, rowRect.height - btnRect.height - padding);
+
+  // Random position
   const x = Math.random() * maxX;
   const y = Math.random() * maxY;
 
-  noBtn.style.position = "absolute";
   noBtn.style.left = `${x}px`;
   noBtn.style.top = `${y}px`;
+
+  noMoves++;
+
+  // Fun text changes
+  if (noMoves === 2) noBtn.textContent = "Are you sure? 😳";
+  if (noMoves === 4) noBtn.textContent = "Nope 😄";
+  if (noMoves === 6) noBtn.textContent = "Try again 🙈";
+  if (noMoves === 8) noBtn.textContent = "Just say yes 😌";
 }
 
 function showResult(accepted) {
@@ -46,7 +60,6 @@ function showResult(accepted) {
     resultText.textContent = "No worries! Still sending you good vibes 🌸";
   }
 
-  // Create an email draft (mailto)
   const subject = encodeURIComponent("My Valentine Answer 💌");
   const body = encodeURIComponent(
     `Hi ${YOUR_NAME}!\n\nMy answer is: ${accepted ? "YES 💖" : "NO 🙈"}\n\n(From your cute website: ${window.location.href})`
@@ -56,24 +69,37 @@ function showResult(accepted) {
   emailLink.target = "_blank";
 }
 
-yesBtn.addEventListener("click", () => {
-  showResult(true);
+yesBtn.addEventListener("click", () => showResult(true));
+
+/**
+ * Desktop: dodge when mouse approaches
+ * Mobile: dodge when user tries to tap (touchstart/pointerdown)
+ */
+noBtn.addEventListener("pointerenter", () => {
+  if (!isTouch) dodgeNoButton();
 });
 
 noBtn.addEventListener("mouseenter", () => {
-  noClicks++;
+  if (!isTouch) dodgeNoButton();
+});
+
+// Mobile-friendly: when they try to tap it, it runs away
+noBtn.addEventListener("touchstart", (e) => {
+  // Stop the tap from triggering a click
+  e.preventDefault();
   dodgeNoButton();
+}, { passive: false });
 
-  // Make it fun but not annoying
-  if (noClicks === 2) noBtn.textContent = "Are you sure? 😳";
-  if (noClicks === 4) noBtn.textContent = "Nope 😄";
-  if (noClicks === 6) noBtn.textContent = "Try again 🙈";
+// Also handle pointerdown for some devices
+noBtn.addEventListener("pointerdown", (e) => {
+  if (isTouch) {
+    e.preventDefault();
+    dodgeNoButton();
+  }
 });
 
-noBtn.addEventListener("click", () => {
-  // If he actually clicks No (on mobile, easier to tap), we respect it
-  showResult(false);
-});
+// If they REALLY manage to click No (rare), respect it
+noBtn.addEventListener("click", () => showResult(false));
 
 copyLinkBtn.addEventListener("click", async () => {
   try {
@@ -84,5 +110,13 @@ copyLinkBtn.addEventListener("click", async () => {
   }
 });
 
-// Set the page title
 document.title = PAGE_TITLE;
+
+// On resize/orientation change, keep it inside bounds
+window.addEventListener("resize", () => {
+  // Reset positioning so layout doesn't look broken after rotation
+  noBtn.style.position = "relative";
+  noBtn.style.left = "";
+  noBtn.style.top = "";
+});
+

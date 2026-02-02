@@ -1,122 +1,166 @@
-// ========== CHANGE THIS ==========
-const YOUR_EMAIL = "sandamini.bandara11@gmail.com";
-const YOUR_NAME = "Me";
-const PAGE_TITLE = "Valentine Surprise 💌";
+// ====== CONFIG ======
+// Put YOUR email here (the recipient who should get the "Yes" reply)
+const RECIPIENT_EMAIL = "your.email@example.com";
 
-// ========== LOGIC ==========
+// Prefilled email content
+const EMAIL_SUBJECT = "💖 Valentine Reply: YES!";
+const EMAIL_BODY = [
+  "Hi!",
+  "",
+  "I clicked YES 💘",
+  "You are officially my Valentine 😄",
+  "",
+  "From,"
+  // user can type their name at the end
+].join("\n");
+
+// ====== ELEMENTS ======
+const scene = document.getElementById("scene");
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
-const result = document.getElementById("result");
-const resultTitle = document.getElementById("resultTitle");
-const resultText = document.getElementById("resultText");
+const hint = document.getElementById("hint");
+
+const modal = document.getElementById("modal");
 const emailLink = document.getElementById("emailLink");
-const copyLinkBtn = document.getElementById("copyLinkBtn");
-const copiedMsg = document.getElementById("copiedMsg");
-const btnRow = document.getElementById("btnRow");
+const closeModal = document.getElementById("closeModal");
 
-let noMoves = 0;
+// ====== HELPERS ======
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
 
-// Detect touch device (mobile/tablet)
-const isTouch = window.matchMedia("(pointer: coarse)").matches;
+function sceneRect() {
+  return scene.getBoundingClientRect();
+}
 
-// Keep the No button inside the btnRow bounds
-function dodgeNoButton() {
-  const rowRect = btnRow.getBoundingClientRect();
-  const btnRect = noBtn.getBoundingClientRect();
+function btnRect(btn) {
+  return btn.getBoundingClientRect();
+}
 
-  // Ensure absolute positioning only when dodging
-  noBtn.style.position = "absolute";
-
-  const padding = 8;
-
-  const maxX = Math.max(0, rowRect.width - btnRect.width - padding);
-  const maxY = Math.max(0, rowRect.height - btnRect.height - padding);
-
-  // Random position
-  const x = Math.random() * maxX;
-  const y = Math.random() * maxY;
-
+function setNoPosition(x, y) {
+  // x,y are pixels relative to scene
   noBtn.style.left = `${x}px`;
   noBtn.style.top = `${y}px`;
-
-  noMoves++;
-
-  // Fun text changes
-  if (noMoves === 2) noBtn.textContent = "Are you sure? 😳";
-  if (noMoves === 4) noBtn.textContent = "Nope 😄";
-  if (noMoves === 6) noBtn.textContent = "Try again 🙈";
-  if (noMoves === 8) noBtn.textContent = "Just say yes 😌";
+  noBtn.style.transform = "translate(-50%, -50%)";
 }
 
-function showResult(accepted) {
-  result.classList.remove("hidden");
-  copiedMsg.textContent = "";
+function randomSpotAvoidingYes() {
+  const s = sceneRect();
+  const noR = btnRect(noBtn);
+  const yesR = btnRect(yesBtn);
 
-  if (accepted) {
-    resultTitle.textContent = "YAY!! 🎉";
-    resultText.textContent = "You just made my day 💗 (click ‘Send your answer’ to confirm)";
-  } else {
-    resultTitle.textContent = "Aww okay 😅";
-    resultText.textContent = "No worries! Still sending you good vibes 🌸";
+  // Safe padding inside the scene
+  const pad = 18;
+
+  // bounds for center-point positioning
+  const minX = pad;
+  const maxX = s.width - pad;
+  const minY = pad;
+  const maxY = s.height - pad;
+
+  // Try a few random spots; avoid being too close to the Yes button
+  for (let i = 0; i < 20; i++) {
+    const x = Math.random() * (maxX - minX) + minX;
+    const y = Math.random() * (maxY - minY) + minY;
+
+    // Approx yes position inside scene
+    const yesCenterX = (yesR.left + yesR.right) / 2 - s.left;
+    const yesCenterY = (yesR.top + yesR.bottom) / 2 - s.top;
+
+    const dx = x - yesCenterX;
+    const dy = y - yesCenterY;
+    const dist = Math.hypot(dx, dy);
+
+    // Keep "No" away from "Yes" so the user doesn't accidentally tap both
+    if (dist > 110) {
+      return { x, y };
+    }
   }
 
-  const subject = encodeURIComponent("My Valentine Answer 💌");
-  const body = encodeURIComponent(
-    `Hi ${YOUR_NAME}!\n\nMy answer is: ${accepted ? "YES 💖" : "NO 🙈"}\n\n(From your cute website: ${window.location.href})`
-  );
-
-  emailLink.href = `mailto:${YOUR_EMAIL}?subject=${subject}&body=${body}`;
-  emailLink.target = "_blank";
+  // fallback
+  return {
+    x: clamp(s.width * 0.75, 20, s.width - 20),
+    y: clamp(s.height * 0.65, 20, s.height - 20)
+  };
 }
 
-yesBtn.addEventListener("click", () => showResult(true));
+function dodgeNo() {
+  const spot = randomSpotAvoidingYes();
+  setNoPosition(spot.x, spot.y);
 
-/**
- * Desktop: dodge when mouse approaches
- * Mobile: dodge when user tries to tap (touchstart/pointerdown)
- */
-noBtn.addEventListener("pointerenter", () => {
-  if (!isTouch) dodgeNoButton();
-});
+  // Update hint text a bit playfully
+  const phrases = [
+    "Nope 😌",
+    "Too slow 😏",
+    "Try again 🙈",
+    "Hehe… not today 😄",
+    "Almost! 😼"
+  ];
+  hint.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+}
 
-noBtn.addEventListener("mouseenter", () => {
-  if (!isTouch) dodgeNoButton();
-});
+function mailtoHref(to, subject, body) {
+  const s = encodeURIComponent(subject);
+  const b = encodeURIComponent(body);
+  return `mailto:${encodeURIComponent(to)}?subject=${s}&body=${b}`;
+}
 
-// Mobile-friendly: when they try to tap it, it runs away
+// ====== INIT ======
+// place "No" somewhere nice on load
+(function initNoPosition() {
+  // Wait for layout so bounding boxes are correct
+  requestAnimationFrame(() => {
+    const s = sceneRect();
+    setNoPosition(s.width * 0.65, s.height * 0.58);
+  });
+})();
+
+// Update email link
+emailLink.href = mailtoHref(RECIPIENT_EMAIL, EMAIL_SUBJECT, EMAIL_BODY);
+
+// ====== EVENTS ======
+
+// Desktop hover dodge
+noBtn.addEventListener("mouseenter", dodgeNo);
+
+// Mobile: dodge on touch start (before click happens)
 noBtn.addEventListener("touchstart", (e) => {
-  // Stop the tap from triggering a click
   e.preventDefault();
-  dodgeNoButton();
+  dodgeNo();
 }, { passive: false });
 
-// Also handle pointerdown for some devices
-noBtn.addEventListener("pointerdown", (e) => {
-  if (isTouch) {
-    e.preventDefault();
-    dodgeNoButton();
-  }
+// If user still manages to click it (rare), dodge anyway
+noBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  dodgeNo();
 });
 
-// If they REALLY manage to click No (rare), respect it
-noBtn.addEventListener("click", () => showResult(false));
-
-copyLinkBtn.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText(window.location.href);
-    copiedMsg.textContent = "✅ Link copied!";
-  } catch {
-    copiedMsg.textContent = "❌ Couldn’t copy. You can manually copy the URL from the address bar.";
-  }
-});
-
-document.title = PAGE_TITLE;
-
-// On resize/orientation change, keep it inside bounds
+// Keep inside bounds on resize/orientation change
 window.addEventListener("resize", () => {
-  // Reset positioning so layout doesn't look broken after rotation
-  noBtn.style.position = "relative";
-  noBtn.style.left = "";
-  noBtn.style.top = "";
+  const spot = randomSpotAvoidingYes();
+  setNoPosition(spot.x, spot.y);
 });
 
+// YES action -> show modal + email link
+yesBtn.addEventListener("click", () => {
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+});
+
+// Close modal
+function closeIt() {
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+closeModal.addEventListener("click", closeIt);
+
+// Click outside modal card to close
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) closeIt();
+});
+
+// ESC to close
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && modal.classList.contains("show")) closeIt();
+});

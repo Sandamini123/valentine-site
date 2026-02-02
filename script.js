@@ -1,6 +1,6 @@
 // ====== CONFIG ======
 // Put YOUR email here (the recipient who should get the "Yes" reply)
-const RECIPIENT_EMAIL = "your.email@example.com";
+const RECIPIENT_EMAIL = "sandamini.bandara11@gmail.com";
 
 // Prefilled email content
 const EMAIL_SUBJECT = "💖 Valentine Reply: YES!";
@@ -164,3 +164,4 @@ modal.addEventListener("click", (e) => {
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && modal.classList.contains("show")) closeIt();
 });
+
